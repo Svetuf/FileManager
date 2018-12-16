@@ -1,0 +1,29 @@
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\bin\Debug\manager.exe.config
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\bin\Debug\manager.exe
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\bin\Debug\manager.pdb
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.Form1.resources
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.Form2.resources
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.Form3.resources
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.Form4.resources
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.Properties.Resources.resources
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.csproj.GenerateResource.Cache
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.exe
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.pdb
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.csprojResolveAssemblyReference.cache
+C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\manager.Form5.resources
+C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\manager.exe.config
+C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\manager.exe
+C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\manager.pdb
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form1.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form2.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form3.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form4.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form5.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form6.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form7.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form8.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Properties.Resources.resources
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.csproj.GenerateResource.Cache
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.exe
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.pdb
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.csprojResolveAssemblyReference.cache
