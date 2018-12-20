@@ -45,6 +45,8 @@
             this.EncryptTextBox = new System.Windows.Forms.TextBox();
             this.button9 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
+            this.button12 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listView1
@@ -64,7 +66,7 @@
             this.listView2.Location = new System.Drawing.Point(525, 54);
             this.listView2.Name = "listView2";
             this.listView2.Scrollable = false;
-            this.listView2.Size = new System.Drawing.Size(125, 358);
+            this.listView2.Size = new System.Drawing.Size(125, 243);
             this.listView2.TabIndex = 3;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Tile;
@@ -210,12 +212,34 @@
             this.button10.UseVisualStyleBackColor = true;
             this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
+            // button11
+            // 
+            this.button11.Location = new System.Drawing.Point(526, 304);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(124, 46);
+            this.button11.TabIndex = 19;
+            this.button11.Text = "Create File";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
+            // 
+            // button12
+            // 
+            this.button12.Location = new System.Drawing.Point(526, 356);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(124, 46);
+            this.button12.TabIndex = 20;
+            this.button12.Text = "Create Folder";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.button12_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+         //   this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(772, 425);
+            this.Controls.Add(this.button12);
+            this.Controls.Add(this.button11);
             this.Controls.Add(this.button10);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.EncryptTextBox);
@@ -259,6 +283,8 @@
         private System.Windows.Forms.TextBox EncryptTextBox;
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.Button button12;
     }
 }
 

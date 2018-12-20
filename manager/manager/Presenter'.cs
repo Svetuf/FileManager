@@ -24,9 +24,15 @@ namespace manager
         regularZip regArch;
 
         Strategy s;
+
+        ZippedFolder foldrrrr;
+
         public Presenter(IView view)
         {
             this.view = view;
+           // foldrrrr = new ZippedFolder("C:\\Users\\Илья\\Desktop\\huyi.zip");
+         //   List<string> asss = foldrrrr.GetAllFiles();
+         //   ZippedFile.OpenZipFile("C:\\Users\\Илья\\Desktop\\huyi.zip", asss[0]);
             view.startDownloadForm += new EventHandler(downloadForm);
             view.decryptClicked += new EventHandler(decryptClickedRealize);
             view.encryptClicked += new EventHandler(encryptClickedRealize);
@@ -48,6 +54,7 @@ namespace manager
             view.menu3 += new EventHandler(MENU3);
             view.menu2 += new EventHandler(MENU2);
             view.menu1 += new EventHandler(MENU1);
+            view.updateForm += new EventHandler(updateTheMenu);
 
             CesarCrypt = new crypt();
             CesarEncrypt = new encrypt();
@@ -137,12 +144,57 @@ namespace manager
             List<DirectoryInfo> iFound = new List<DirectoryInfo>();
             List<FileInfo> iFoundFile = new List<FileInfo>();
 
+            List<string> govno = new List<string>();
+
+            foreach(DirectoryInfo i in allDir)
+            {
+                if (i.Name.Contains(".zip"))
+                    govno.Add(i.FullName);
+            }
+
+            foreach (FileInfo i in allFiles)
+            {
+                if (i.Name.Contains(".zip"))
+                    govno.Add(i.FullName);
+            }
+
             iFound = allDir.FindAll((item) => { return Regex.Match(item.Name, reg).Success; });
             iFoundFile = allFiles.FindAll((item) => { return Regex.Match(item.Name, reg).Success; });
 
 
             view.getsetListView.Items.Clear();
 
+            List<string> resultgovno = new List<string>();
+
+            foreach(string i in govno)
+            {
+                foldrrrr = new ZippedFolder(i);
+                try
+                {
+                    List<string> asss = foldrrrr.GetAllFiles();
+                    resultgovno.AddRange(asss);
+                }
+                catch(Exception e1)
+                {
+
+                }
+            }
+
+            List<string> ans = new List<string>();
+            foreach(string i in resultgovno)
+            {
+                if (Regex.Match(i, reg).Success)
+                    ans.Add(i);
+            }
+
+            foreach(string i in ans)
+            {
+                ListViewItem lvi = new ListViewItem();
+                lvi.ImageIndex = 3;
+                lvi.Text = i;
+                lvi.Tag = "directory";
+                view.getsetListView.Items.Add(lvi);
+            }
 
             foreach (DirectoryInfo i in iFound)
             {
@@ -223,6 +275,37 @@ namespace manager
         {
             if (view.getsetListView.SelectedItems[0].Tag.ToString() == "file")
             {
+                if((view.getsetFi + "\\" + view.getsetListView.SelectedItems[0].Text).Contains(".zip"))
+                {
+                    
+                    foldrrrr = new ZippedFolder(view.getsetFi + "\\" + view.getsetListView.SelectedItems[0].Text);
+                    List<string> asss = new List<string>();
+                    try
+                    {
+                        if (view.getsetListView.SelectedItems[0].Text.Last() == 'p')
+                            asss = foldrrrr.GetAllFiles();
+                        else
+                            asss = foldrrrr.GetLevelFiles(1, view.getsetFi + "\\" + view.getsetListView.SelectedItems[0].Text);
+                        
+                    }
+                    catch (Exception e1)
+                    {
+
+                    }
+                    view.AdLevelPath(view.getsetListView.SelectedItems[0].Text);
+                    view.getsetListView.Clear();
+
+                    foreach (string i in asss)
+                    {
+                        ListViewItem lvi = new ListViewItem();
+                        lvi.ImageIndex = 3;
+                        lvi.Text = i;
+                        lvi.Tag = "file";
+                        view.getsetListView.Items.Add(lvi);
+                    }
+                    
+
+                }
                 startFileButton(this, e);
                 return;
             }
@@ -359,10 +442,19 @@ namespace manager
         }
         private void MENU2(object sender, EventArgs e)
         {
-            if (view.getsetListView.SelectedItems[0].Tag.ToString() == "file")
-                FileMethods.delete(FileMethods.Combine(view.getsetFi, view.getsetListView.SelectedItems[0].Text));
+            if (view.getsetFi.Contains(".zip"))
+            {
+                new ZippedFile(view.getsetFi).Delete(view.getsetListView.SelectedItems[0].Text);
+            }
             else
-                FolderMethods.DeleteDirectory(FileMethods.Combine(view.getsetFi, view.getsetListView.SelectedItems[0].Text));
+            {
+
+
+                if (view.getsetListView.SelectedItems[0].Tag.ToString() == "file")
+                    FileMethods.delete(FileMethods.Combine(view.getsetFi, view.getsetListView.SelectedItems[0].Text));
+                else
+                    FolderMethods.DeleteDirectory(FileMethods.Combine(view.getsetFi, view.getsetListView.SelectedItems[0].Text));
+            }
             view.renewList();
         }
         private void MENU1(object sender, EventArgs e)
@@ -371,6 +463,69 @@ namespace manager
             f.ThrowEvent += (senderio, args, st, delo) => { OnkoZakrito(st, delo); };
             f.ShowDialog();
         }
+
+        private void updateTheMenu(object sender, EventArgs e)
+        {
+            if (view.getsetFi == "" || view.getsetFi.Length <= 2)
+            {
+                view.getsetListView.Items.Clear();
+                var drives = FolderMethods.getDrInfo();
+                foreach (var i in drives)
+                {
+                    ListViewItem lvi = new ListViewItem();
+                    lvi.ImageIndex = 2;
+                    lvi.Text = i.Name;
+                    lvi.Tag = "directory";
+                    view.getsetListView.Items.Add(lvi);
+                }
+                view.obnullFi();
+                view.getsetRichTextBox1("DISKS");
+                view.getWatcher.Path = @"\";
+                view.getWatcher.Filter = "*.*";
+                return;
+            }
+            try
+            {
+                if(view.getsetFi.Contains(".zip"))
+                {
+
+                    foldrrrr = new ZippedFolder(view.getsetFi);
+                    List<string> asss = new List<string>();
+                    try
+                    {
+                        
+                            asss = foldrrrr.GetAllFiles();
+
+                    }
+                    catch (Exception e1)
+                    {
+
+                    }
+                    view.getsetListView.Clear();
+
+                    foreach (string i in asss)
+                    {
+                        ListViewItem lvi = new ListViewItem();
+                        lvi.ImageIndex = 3;
+                        lvi.Text = i;
+                        lvi.Tag = "file";
+                        view.getsetListView.Items.Add(lvi);
+                    }
+                    return;
+                }
+
+                view.getsetListView.Items.Clear();
+
+                FolderMethods.UpdateDirectories(view.getsetListView.Items, view.getsetFi);
+                FileMethods.UpdateFiles(view.getsetListView.Items, view.getsetFi);
+
+                view.getsetRichTextBox1(view.getsetFi);
+                view.getWatcher.Path = view.getsetFi;
+                view.getWatcher.Filter = "*.*";
+            }
+            catch (Exception) { }
+        }
+
     }
 
     interface IView
@@ -396,6 +551,7 @@ namespace manager
         event EventHandler menu3;
         event EventHandler menu2;
         event EventHandler menu1;
+        event EventHandler updateForm;
 
 
        //getters setters
@@ -409,6 +565,7 @@ namespace manager
        string getsetRichTextBox3 { get; set; }
        void getsetRichTextBox1(string s);
        FileSystemWatcher getWatcher { get; set; }
+       void obnullFi();
     }
 
 }

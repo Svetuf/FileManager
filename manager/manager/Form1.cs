@@ -16,12 +16,34 @@ using Ionic.Zip;
 
 namespace manager
 {
+
+    class Factory
+    {
+        public static Entity Get(string path)
+        {
+            if(!path.Contains(".zip"))
+            {
+                if (Entity.getExstention(path) == "")
+                    return new FolderMethods(path);
+                return new FileMethods(path);
+            }
+            else
+            {
+                if (Entity.getExstention(path) == "")
+                    return new ZippedFolder(path);
+                return new ZippedFolder(path);
+            }
+            
+        }
+    }
+
     public partial class Form1 : Form, IView
     {
         protected const int WM_NCHITTEST = 0x84;
         protected const int HTCAPTION = 2;
         protected const int HTCLIENT = 1;
         protected ContextMenu contextMenu;
+
         protected MenuItem menuItem1;
         protected MenuItem menuItem2;
         protected MenuItem menuItem3;
@@ -57,7 +79,7 @@ namespace manager
         public event EventHandler menu3;
         public event EventHandler menu2;
         public event EventHandler menu1;
-
+        public event EventHandler updateForm;
 
 
         //шаблоны архивирования
@@ -94,6 +116,10 @@ namespace manager
         public void getsetRichTextBox1(string s)
         {
             richTextBox1.Text = s;
+        }
+        public void obnullFi()
+        {
+            fi.obnull();
         }
         public FileSystemWatcher getWatcher { get { return w; } set { } }
 
@@ -198,6 +224,7 @@ namespace manager
             imageListSmall.Images.Add(Bitmap.FromFile("C:\\file.ico"));
             imageListSmall.Images.Add(Bitmap.FromFile("C:\\papka.ico"));
             imageListSmall.Images.Add(Bitmap.FromFile("C:\\intro-external-drive.png"));
+            imageListSmall.Images.Add(Bitmap.FromFile("C:\\zip.png"));
             imageListSmall.ImageSize = new Size(32, 32);
             listView1.LargeImageList = imageListSmall;
             var drives = FolderMethods.getDrInfo();
@@ -231,6 +258,32 @@ namespace manager
             contextMenu.MenuItems.Add(menuItem9);
             contextMenu.MenuItems.Add(menuItem10);
             richTextBox2.Text = "eat";
+            
+        }
+
+        protected void MakeDir()
+        {
+            /*
+            if(fi.getP().Contains(".zip"))
+            
+             new   ZippedFolder(fi.getP()).CreateFolder("new folder");
+            
+            else
+             FolderMethods.CreateDirectory(fi.getP() + "\\new_folder");
+             */
+            Factory.Get(fi.getP()).createFolder();
+        }
+        protected void MakeFule()
+        {
+            /*
+            if (fi.getP().Contains(".zip"))
+
+                new ZippedFolder(fi.getP()).CreateFile("newfile.txt");
+
+            else
+                FileMethods.create(fi.getP() + "\\new_file.txt");
+                */
+           Factory.Get(fi.getP()).createFile();
         }
 
         protected void Form1_GiveFeedback(object sender, GiveFeedbackEventArgs e)
@@ -278,36 +331,7 @@ namespace manager
 
         public void updateList()
         {
-            if (fi.getP() == "" || fi.getP().Length <= 2)
-            {
-                listView1.Items.Clear();
-                var drives = FolderMethods.getDrInfo();
-                foreach (var i in drives)
-                {
-                    ListViewItem lvi = new ListViewItem();
-                    lvi.ImageIndex = 2;
-                    lvi.Text = i.Name;
-                    lvi.Tag = "directory";
-                    listView1.Items.Add(lvi);
-                }
-                fi.obnull();
-                richTextBox1.Text = "DISKS";
-                w.Path = @"\";
-                w.Filter = "*.*";
-                return;
-            }
-            try
-            {
-                listView1.Items.Clear();
-
-                FolderMethods.UpdateDirectories(listView1.Items, fi.getP());
-                FileMethods.UpdateFiles(listView1.Items, fi.getP());
-
-                richTextBox1.Text = fi.getP();
-                w.Path = fi.getP();
-                w.Filter = "*.*";
-            }
-            catch (Exception) { }
+            updateForm(this, new EventArgs());
         }
 
         protected void button4_Click(object sender, EventArgs e)
@@ -319,7 +343,7 @@ namespace manager
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                contextMenu.Show(listView1, e.Location);
+              contextMenu.Show(listView1, e.Location);
             }
         }
 
@@ -367,6 +391,16 @@ namespace manager
         private void button10_Click(object sender, EventArgs e)
         {
             decryptClicked(sender, e);
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            MakeFule();
+        }
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            MakeDir();
         }
     }
 
