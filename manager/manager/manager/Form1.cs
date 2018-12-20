@@ -12,15 +12,38 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using Ionic.Zip;
 
 namespace manager
 {
-    public partial class Form1 : Form
+
+    class Factory
+    {
+        public static Entity Get(string path)
+        {
+            if(!path.Contains(".zip"))
+            {
+                if (Entity.getExstention(path) == "")
+                    return new FolderMethods(path);
+                return new FileMethods(path);
+            }
+            else
+            {
+                if (Entity.getExstention(path) == "")
+                    return new ZipFolder(path);
+                return new ZipFolder(path);
+            }
+            
+        }
+    }
+
+    public partial class Form1 : Form, IView
     {
         protected const int WM_NCHITTEST = 0x84;
         protected const int HTCAPTION = 2;
         protected const int HTCLIENT = 1;
         protected ContextMenu contextMenu;
+
         protected MenuItem menuItem1;
         protected MenuItem menuItem2;
         protected MenuItem menuItem3;
@@ -30,8 +53,33 @@ namespace manager
         protected MenuItem menuItem7;
         protected MenuItem menuItem8;
         protected MenuItem menuItem9;
+        protected MenuItem menuItem10;
         protected WorkWithFiles fi;
         FileSystemWatcher w;
+
+        // events from IVIew
+        public event EventHandler startDownloadForm;
+        public event EventHandler encryptClicked;
+        public event EventHandler decryptClicked;
+        public event EventHandler asynkTaskSearchClicked;
+        public event EventHandler searchFilesByUserInput;
+        public event EventHandler TaskSearchClicked;
+        public event EventHandler foreachSearch;
+        public event EventHandler defaultSearck;
+        public event EventHandler openButtonClicked;
+        public event EventHandler doubleclickOpen;
+        public event EventHandler selectedIndexChanged;
+        public event EventHandler menu10;
+        public event EventHandler menu9;
+        public event EventHandler menu8;
+        public event EventHandler menu7;
+        public event EventHandler menu6;
+        public event EventHandler menu5;
+        public event EventHandler menu4;
+        public event EventHandler menu3;
+        public event EventHandler menu2;
+        public event EventHandler menu1;
+        public event EventHandler updateForm;
 
 
         //шаблоны архивирования
@@ -43,6 +91,44 @@ namespace manager
         //стратегия поиска по регуляркам 
         Strategy s;
 
+        //
+        Md5Hash visitor;
+        crypt CesarCrypt;
+        encrypt CesarEncrypt;
+
+        //setters and getters
+        public void addItemToLW2(ListViewItem i)
+        {
+            listView2.Items.Add(i);
+        }
+        public void clearListView2()
+        {
+            listView2.Clear();
+        }
+        public void AdLevelPath(string s)
+        {
+            fi.addLevel(s);
+        }
+        public ListView getsetListView { get { return listView1; } set { } }
+        public string getsetFi{ get { return fi.getP(); } set { } }
+        public string getsetEncryptTExtBox { get { return EncryptTextBox.Text; } set { } }
+        public string getsetRichTextBox3 { get { return richTextBox3.Text; } set { } }
+        public void getsetRichTextBox1(string s)
+        {
+            richTextBox1.Text = s;
+        }
+        public void obnullFi()
+        {
+            fi.obnull();
+        }
+        public FileSystemWatcher getWatcher { get { return w; } set { } }
+
+        public void renewList()
+        {
+            updateList();
+        }
+
+        ///
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
@@ -50,128 +136,30 @@ namespace manager
                 m.Result = (IntPtr)HTCAPTION;
         }
 
-        protected void OnkoZakrito(string s, string dela)
-        {
-            if (dela == "copy")
-            {
-                try
-                {
-                    if (listView1.SelectedItems[0].Tag.ToString() == "file")
-                    {
-                        FileMethods.copy(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), Path.Combine(s, listView1.SelectedItems[0].Text), true);
-                       // File.Copy(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), Path.Combine(s, listView1.SelectedItems[0].Text), true);
-                    }
-                    else
-                    {
-                        // directory
-                    }
-                }
-                catch (Exception e)
-                {
-
-                }
-                return;
-            }
-            if (dela == "replace")
-            {
-                if (listView1.SelectedItems[0].Tag.ToString() == "file")
-                {
-                    FileMethods.move(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), Path.Combine(s, listView1.SelectedItems[0].Text));
-                }
-                else
-                {
-                    FolderMethods.move(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), s);
-                }
-                return;
-            }
-
-            if (dela == "rename")
-            {
-                if (listView1.SelectedItems[0].Tag.ToString() == "directory")
-                {
-                    FolderMethods.move(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text),
-                        Path.Combine(fi.getP(), s));
-                    updateList();
-                    return;
-                }
-                FileMethods.delete(Path.Combine(fi.getP(), s));
-                string h = listView1.SelectedItems[0].Text;
-                int ind = h.IndexOf('.');
-                h = h.Substring(ind);
-                FileMethods.move(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), Path.Combine(fi.getP(), s + h));
-                updateList();
-            }
-
-        }
-
         protected void menu1_click(object sender, EventArgs e) // copy file/directory
         {
-            Form3 f = new Form3(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), listView1.SelectedItems[0].Tag.ToString(), "copy");
-            f.ThrowEvent += (senderio, args, st, delo) => { OnkoZakrito(st, delo); };
-            f.ShowDialog();
+            menu1(sender, e);
         }
 
         protected void menu2_click(object sender, EventArgs e) // delete
         {
-            if (listView1.SelectedItems[0].Tag.ToString() == "file")
-                FileMethods.delete(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text));
-            else
-                FolderMethods.DeleteDirectory(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text));
-            updateList();
+            menu2(sender, e);
         }
 
         protected void menu3_click(object sender, EventArgs e) // replase
         {
-            Form3 f = new Form3(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text), listView1.SelectedItems[0].Tag.ToString(), "replace");
-            f.ThrowEvent += (senderio, args, st, delo) => { OnkoZakrito(st, delo); };
-            f.ShowDialog();
+            menu3(sender, e);
         }
 
         protected void menu4_click(object sender, EventArgs e) // rename
         {
-            Form4 f = new Form4();
-            f.ThrowEvent += (se, args, st, delo) => { OnkoZakrito(st, delo); };
-            f.ShowDialog();
+            menu4(sender, e);
         }
 
         protected void menu5_click(object sender, EventArgs e,
             string somePath = "getMefromSelectedItem", string sometag = "plzTagme", string werewer = "nigde")
         {
-
-
-
-            regArch.archive(fi.getP(), listView1.SelectedItems[0].Text, listView1.SelectedItems[0].Tag.ToString());
-
-            /*
-            if (somePath == "getMefromSelectedItem")
-                somePath = listView1.SelectedItems[0].Text;
-            if (sometag == "plzTagme")
-                sometag = listView1.SelectedItems[0].Tag.ToString();
-            if (werewer == "nigde")
-                werewer = fi.getP();
-
-
-            if (sometag == "directory")
-            {
-                Directory.CreateDirectory(werewer + "\\" + somePath + ".archivated");
-
-                DirectoryInfo dInf = new DirectoryInfo(Path.Combine(werewer, somePath));
-                FileInfo[] files = dInf.GetFiles("*", SearchOption.AllDirectories);
-
-                foreach (FileInfo curFile in files)
-                {
-                    archiveFile(curFile.FullName, werewer + "\\" + somePath + ".archivated" +
-                    "\\" + curFile.Name + ".zip");
-                }
-
-            }
-            else
-            {
-                archiveFile(Path.Combine(werewer, somePath),
-                    Path.Combine(werewer, somePath) + ".zip");
-            }
-
-            */
+            menu5(sender, e);
         }
 
         protected void menu5_click(object sender, EventArgs e)
@@ -181,122 +169,28 @@ namespace manager
 
         protected void menu6_click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count < 0)
-            {
-                return;
-            }
-
-
-            foreachArch.archive(fi.getP(), listView1.SelectedItems[0].Text, listView1.SelectedItems[0].Tag.ToString());
-
-            /*
-            string sometag = listView1.SelectedItems[0].Tag.ToString();
-            string somePath = listView1.SelectedItems[0].Text;
-            string werewer = fi.getP();
-
-            if (sometag == "directory")
-            {
-                Directory.CreateDirectory(werewer + "\\" + somePath + ".archivated");
-
-                DirectoryInfo dInf = new DirectoryInfo(Path.Combine(werewer, somePath));
-                FileInfo[] files = dInf.GetFiles("*", SearchOption.AllDirectories);
-
-                Parallel.ForEach(files, (currentFile) =>
-                {
-                    archiveFile(currentFile.FullName, werewer + "\\" + somePath + ".archivated" +
-                    "\\" + currentFile.Name + ".zip");
-                });
-
-            }
-            else
-            {
-                archiveFile(Path.Combine(werewer, somePath),
-                    Path.Combine(werewer, somePath) + ".zip");
-            }
-            */
-
+            menu6(sender, e);
         }
 
         protected void menu7_click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count < 0)
-            {
-                return;
-            }
-            
-            taskArch.archive(fi.getP(), listView1.SelectedItems[0].Text, listView1.SelectedItems[0].Tag.ToString());
-
-            /*
-            string sometag = listView1.SelectedItems[0].Tag.ToString();
-            string somePath = listView1.SelectedItems[0].Text;
-            string werewer = fi.getP();
-
-            if (sometag == "directory")
-            {
-                Directory.CreateDirectory(werewer + "\\" + somePath + ".archivated");
-
-                DirectoryInfo dInf = new DirectoryInfo(Path.Combine(werewer, somePath));
-                FileInfo[] files = dInf.GetFiles("*", SearchOption.AllDirectories);
-
-                Task[] tsk = new Task[files.Length];
-                for (int i = 0; i < files.Length; i++)
-                    tsk[i] = Task.Factory.StartNew((currentFile) =>
-                {
-                    archiveFile(((FileInfo)currentFile).FullName, werewer + "\\" + somePath + ".archivated" +
-                    "\\" + ((FileInfo)currentFile).Name + ".zip");
-                }, files[i]);
-                Task.WaitAll(tsk);
-            }
-            else
-            {
-                archiveFile(Path.Combine(werewer, somePath),
-                    Path.Combine(werewer, somePath) + ".zip");
-            }
-            */
+            menu7(sender, e);
         }
+        
 
         protected void menu8_click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count < 0)
-            {
-                return;
-            }
-            
-            asyncArch.archive(fi.getP(), listView1.SelectedItems[0].Text, listView1.SelectedItems[0].Tag.ToString());
-
-            /*
-            string sometag = listView1.SelectedItems[0].Tag.ToString();
-            string somePath = listView1.SelectedItems[0].Text;
-            string werewer = fi.getP();
-
-            if (sometag == "directory")
-            {
-                Directory.CreateDirectory(werewer + "\\" + somePath + ".archivated");
-
-                DirectoryInfo dInf = new DirectoryInfo(Path.Combine(werewer, somePath));
-                FileInfo[] files = dInf.GetFiles("*", SearchOption.AllDirectories);
-
-                List<Task> tsk = new List<Task>();
-                for (int i = 0; i < files.Length; i++)
-                    tsk.Add(Task.Factory.StartNew((currentFile) =>
-                    {
-                        archiveFile(((FileInfo)currentFile).FullName, werewer + "\\" + somePath + ".archivated" +
-                        "\\" + ((FileInfo)currentFile).Name + ".zip");
-                    }, files[i]));
-                await Task.WhenAll(tsk);
-            }
-            else
-            {
-                archiveFile(Path.Combine(werewer, somePath),
-                    Path.Combine(werewer, somePath) + ".zip");
-            }
-            */
+            menu8(sender, e);
         }
 
         protected void menu9_click(object sender, EventArgs e)
         {
-            Form8 form = new Form8(Path.Combine(fi.getP(), listView1.SelectedItems[0].Text)) ;
-            form.ShowDialog();
+            menu9(sender, e);
+        }
+
+        protected void menu10_click(object sender, EventArgs e)
+        {
+            menu10(sender, e);
         }
 
 
@@ -309,6 +203,13 @@ namespace manager
         {
             w = new FileSystemWatcher();
             InitializeComponent();
+
+            Presenter pres = new Presenter(this);
+
+
+            visitor = new Md5Hash();
+            CesarCrypt = new crypt();
+            CesarEncrypt = new encrypt();
 
             asyncArch = new asyncTaskZip();
             taskArch = new taskZip();
@@ -323,10 +224,11 @@ namespace manager
             imageListSmall.Images.Add(Bitmap.FromFile("C:\\file.ico"));
             imageListSmall.Images.Add(Bitmap.FromFile("C:\\papka.ico"));
             imageListSmall.Images.Add(Bitmap.FromFile("C:\\intro-external-drive.png"));
+            imageListSmall.Images.Add(Bitmap.FromFile("C:\\zip.png"));
             imageListSmall.ImageSize = new Size(32, 32);
             listView1.LargeImageList = imageListSmall;
-            DriveInfo[] drives = DriveInfo.GetDrives();
-            foreach (DriveInfo i in drives)
+            var drives = FolderMethods.getDrInfo();
+            foreach (var i in drives)
             {
                 ListViewItem lvi = new ListViewItem();
                 lvi.ImageIndex = 2;
@@ -344,6 +246,7 @@ namespace manager
             menuItem7 = new MenuItem("&Archive parralelTask", new EventHandler(menu7_click));
             menuItem8 = new MenuItem("&Archive Task async", new EventHandler(menu8_click));
             menuItem9 = new MenuItem("&Statictic", new EventHandler(menu9_click));
+            menuItem10 = new MenuItem("&MD5 hash", new EventHandler(menu10_click));
             contextMenu.MenuItems.Add(menuItem1);
             contextMenu.MenuItems.Add(menuItem2);
             contextMenu.MenuItems.Add(menuItem3);
@@ -353,20 +256,38 @@ namespace manager
             contextMenu.MenuItems.Add(menuItem7);
             contextMenu.MenuItems.Add(menuItem8);
             contextMenu.MenuItems.Add(menuItem9);
+            contextMenu.MenuItems.Add(menuItem10);
             richTextBox2.Text = "eat";
+            
+        }
+
+        protected void MakeDir()
+        {
+            /*
+            if(fi.getP().Contains(".zip"))
+            
+             new   ZippedFolder(fi.getP()).CreateFolder("new folder");
+            
+            else
+             FolderMethods.CreateDirectory(fi.getP() + "\\new_folder");
+             */
+            Factory.Get(fi.getP()).createFolder();
+        }
+        protected void MakeFule()
+        {
+            /*
+            if (fi.getP().Contains(".zip"))
+
+                new ZippedFolder(fi.getP()).CreateFile("newfile.txt");
+
+            else
+                FileMethods.create(fi.getP() + "\\new_file.txt");
+                */
+           Factory.Get(fi.getP()).createFile();
         }
 
         protected void Form1_GiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
-        }
-
-        protected void menuStrip1_DragEnter(object sender, DragEventArgs e)
-        {
-        }
-
-        void fileEvent(object sender, FileSystemEventArgs e)
-        {
-            updateList();
         }
 
         protected void Form1_Load(object sender, EventArgs e)
@@ -394,28 +315,12 @@ namespace manager
 
         protected void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            listView2.Items.Clear();
-            if (listView1.SelectedItems.Count == 0)
-                return;
-            if (listView1.SelectedItems[0].Tag.ToString() == "file")
-            {
-                FileMethods f = new FileMethods(fi.getP() + @"\" + listView1.SelectedItems[0].Name);
-                ListViewItem lvi = new ListViewItem();
-                lvi.Text = "Расширение : " + f.myType();
-                listView2.Items.Add(lvi);
-            }
+            selectedIndexChanged(sender, e);
         }
 
         protected void listView1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (listView1.SelectedItems[0].Tag.ToString() == "file")
-            {
-                button4_Click(this, e);
-                return;
-            }
-            string toAdd = listView1.SelectedItems[0].Text;
-            fi.addLevel(toAdd);
-            updateList();
+           doubleclickOpen(sender,e);
         }
 
         protected void button2_Click_1(object sender, EventArgs e)
@@ -424,90 +329,21 @@ namespace manager
             updateList();
         }
 
-        protected void updateList()
+        public void updateList()
         {
-            if (fi.getP() == "" || fi.getP().Length <= 2)
-            {
-                listView1.Items.Clear();
-                DriveInfo[] drives = DriveInfo.GetDrives();
-                foreach (DriveInfo i in drives)
-                {
-                    ListViewItem lvi = new ListViewItem();
-                    lvi.ImageIndex = 2;
-                    lvi.Text = i.Name;
-                    lvi.Tag = "directory";
-                    listView1.Items.Add(lvi);
-                }
-                fi.obnull();
-                richTextBox1.Text = "DISKS";
-                w.Path = @"\";
-                w.Filter = "*.*";
-                return;
-            }
-            try
-            {
-                listView1.Items.Clear();
-
-                FolderMethods.UpdateDirectories(listView1.Items, fi.getP());
-                FileMethods.UpdateFiles(listView1.Items, fi.getP());
-
-                /*
-                DirectoryInfo dInf = new DirectoryInfo(fi.getP());
-                DirectoryInfo[] dMas = dInf.GetDirectories();
-                FileInfo[] fMas = dInf.GetFiles();
-
-                foreach (DirectoryInfo i in dMas)
-                {
-                    ListViewItem lvi = new ListViewItem();
-                    lvi.ImageIndex = 1;
-                    lvi.Text = i.Name;
-                    lvi.Tag = "directory";
-                    listView1.Items.Add(lvi);
-                }
-
-                foreach (FileInfo i in fMas)
-                {
-                    ListViewItem lvi = new ListViewItem();
-                    lvi.ImageIndex = 0;
-                    lvi.Text = i.Name;
-                    lvi.Tag = "file";
-                    listView1.Items.Add(lvi);
-                }
-                */
-                richTextBox1.Text = fi.getP();
-                w.Path = fi.getP();
-                w.Filter = "*.*";
-            }
-            catch (Exception) { }
-        }
-
-        protected void button3_Click(object sender, EventArgs e)
-        {
-            fi.goAntiBack();
-            updateList();
+            updateForm(this, new EventArgs());
         }
 
         protected void button4_Click(object sender, EventArgs e)
         {
-            try
-            {
-                //File.Open(fi.getP() + @"\" + listView1.SelectedItems[0].Text, FileMode.Open);
-                if (listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag.ToString() == "file")
-                {
-                    Process.Start(fi.getP() + @"\" + listView1.SelectedItems[0].Text);
-                }
-            }
-            catch (Exception)
-            {
-                richTextBox1.Text = "errpr";
-            }
+            openButtonClicked(sender,e);
         }
 
         protected void listView1_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                contextMenu.Show(listView1, e.Location);
+              contextMenu.Show(listView1, e.Location);
             }
         }
 
@@ -519,381 +355,52 @@ namespace manager
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            s.setInterface(new defaultSearch());
-
-            s.getRegFiles(fi.getP());
-
-            /*
-            string[] FilesName = Directory.GetFiles(fi.getP(), "*.*", SearchOption.AllDirectories);
-
-            int NumberFiles = FilesName.Length;
-            List<string> regular_str = new List<string>();
-            List<string> types = new List<string>();
-            regular_str.Add(@"(((8|\+7)[\- ]?)(\(?\d{3}\)?[\- ]?)?[\d\- ]{7})");
-            regular_str.Add(@"(\d{4}\s\d{6})");
-            regular_str.Add(@"(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})");
-            regular_str.Add(@"(/^\d{10}|\d{12}$/)");
-            regular_str.Add(@"(https?://([a-z1-9]+.)?[a-z1-9\-]+(\.[a-z]+){1,}/?)");
-            regular_str.Add(@"([A - Za - zА - Яа - яЁё]{ 3,})");
-            regular_str.Add(@"([1-31]{1,2}).([1-12]{1,2}).([1950-2050]{4,4})");
-
-
-            System.Diagnostics.Stopwatch swr = new Stopwatch();
-            swr.Start();
-
-
-
-            List<string> Itog = new List<string>();
-
-            foreach (string file in FilesName)
-            {
-                try
-                {
-                    using (StreamReader sr = new StreamReader(file))
-                    {
-                        String line = sr.ReadToEnd();
-
-                        foreach (string s in regular_str)
-                        {
-
-                            if (Regex.Match(line, s).Success)
-                            {
-                                Itog.Add(file + "   " + s + "   " + Regex.Match(line, s));
-                            }
-                        }
-                    }
-                }
-
-                catch (Exception e2)
-                {
-                    MessageBox.Show(e2.Message);
-                }
-
-            }
-
-
-
-            StreamWriter sw = new StreamWriter(Path.Combine(fi.getP(), "foundreg.txt"), false, System.Text.Encoding.Default);
-
-            foreach (string line in Itog)
-            {
-                sw.WriteLine(line);
-            }
-            sw.Close();
-            swr.Stop();
-            MessageBox.Show((swr.ElapsedMilliseconds / 100.0).ToString());
-            */
+            defaultSearck(sender, e);
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            s.setInterface(new foreachSearch());
-            s.getRegFiles(fi.getP());
-
-            /*
-            string[] FilesName = Directory.GetFiles(fi.getP(), "*.*", SearchOption.AllDirectories);
-
-            int NumberFiles = FilesName.Length;
-            List<string> regular_str = new List<string>();
-            List<string> types = new List<string>();
-            regular_str.Add(@"(((8|\+7)[\- ]?)(\(?\d{3}\)?[\- ]?)?[\d\- ]{7})");
-            regular_str.Add(@"(\d{4}\s\d{6})");
-            regular_str.Add(@"(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})");
-            regular_str.Add(@"(/^\d{10}|\d{12}$/)");
-            regular_str.Add(@"(https?://([a-z1-9]+.)?[a-z1-9\-]+(\.[a-z]+){1,}/?)");
-            regular_str.Add(@"([A - Za - zА - Яа - яЁё]{ 3,})");
-            regular_str.Add(@"([1-31]{1,2}).([1-12]{1,2}).([1950-2050]{4,4})");
-
-            System.Diagnostics.Stopwatch swr = new Stopwatch();
-            swr.Start();
-
-
-            List<string> Itog = new List<string>();
-
-            Parallel.ForEach(FilesName, (currentFile) =>
-            {
-                try
-                {
-                    using (StreamReader sr = new StreamReader(currentFile))
-                    {
-                        String line = sr.ReadToEnd();
-
-                        foreach (string s in regular_str)
-                        {
-
-                            if (Regex.Match(line, s).Success)
-                            {
-                                Itog.Add(currentFile + "   " + s + "   " + Regex.Match(line, s));
-                            }
-                        }
-                    }
-                }
-
-                catch (Exception e2)
-                {
-                    MessageBox.Show(e2.Message);
-                }
-
-            });
-
-
-
-            StreamWriter sw = new StreamWriter(Path.Combine(fi.getP(), "foundreg.txt"), false, System.Text.Encoding.Default);
-
-            foreach (string line in Itog)
-            {
-                sw.WriteLine(line);
-            }
-            swr.Stop();
-            MessageBox.Show((swr.ElapsedMilliseconds / 100.0).ToString());
-            sw.Close();
-            */
+            foreachSearch(sender,e);
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            // this.Hide();
-            Form7 f = new Form7();
-            f.ShowDialog();
+            startDownloadForm(sender, e);
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            s.setInterface(new taskSearch());
-            s.getRegFiles(fi.getP());
-
-            /*
-            string[] FilesName = Directory.GetFiles(fi.getP(), "*.*", SearchOption.AllDirectories);
-
-            int NumberFiles = FilesName.Length;
-            List<string> regular_str = new List<string>();
-            List<string> types = new List<string>();
-            regular_str.Add(@"(((8|\+7)[\- ]?)(\(?\d{3}\)?[\- ]?)?[\d\- ]{7})");
-            regular_str.Add(@"(\d{4}\s\d{6})");
-            regular_str.Add(@"(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})");
-            regular_str.Add(@"(/^\d{10}|\d{12}$/)");
-            regular_str.Add(@"(https?://([a-z1-9]+.)?[a-z1-9\-]+(\.[a-z]+){1,}/?)");
-            regular_str.Add(@"([A - Za - zА - Яа - яЁё]{ 3,})");
-            regular_str.Add(@"([1-31]{1,2}).([1-12]{1,2}).([1950-2050]{4,4})");
-
-            List<string> Itog = new List<string>();
-
-            Task[] u = new Task[FilesName.Length];
-
-            for (int j = 0; j < FilesName.Length; j++)
-            {
-                u[j] = Task.Factory.StartNew((i) =>
-                {
-                    try
-                    {
-                        using (StreamReader sr = new StreamReader((string)i))
-                        {
-                            String line = sr.ReadToEnd();
-
-                            foreach (string s in regular_str)
-                            {
-
-                                if (Regex.Match(line, s).Success)
-                                {
-                                    Itog.Add((string)i + "   " + s + "   " + Regex.Match(line, s));
-                                }
-                            }
-                        }
-                    }
-
-                    catch (Exception e2)
-                    {
-                        MessageBox.Show(e2.Message);
-                    }
-                }, FilesName[j]);
-            }
-
-            Task.WaitAll(u);
-
-            StreamWriter sw = new StreamWriter(Path.Combine(fi.getP(), "foundreg.txt"), false, System.Text.Encoding.Default);
-
-
-
-            foreach (string line in Itog)
-            {
-                sw.WriteLine(line);
-            }
-
-            sw.Close();
-            */
+            TaskSearchClicked(sender, e);
         }
 
         private void richTextBox3_TextChanged(object sender, EventArgs e)
         {
-            string pred = richTextBox3.Text;
-
-            string reg = "";
-            for (int i = 0; i < pred.Length; i++)
-            {
-                if (pred[i] == '*')
-                {
-                    reg += "(.*)*";
-                    continue;
-                }
-                if (pred[i] == '?')
-                {
-                    reg += "?";
-                    continue;
-                }
-                reg += pred[i];
-
-            }
-
-            //  DirectoryInfo dInf = new DirectoryInfo(fi.getP());
-            //  DirectoryInfo[] dMas = dInf.GetDirectories();
-            // FileInfo[] fMas = dInf.GetFiles();
-
-            List<DirectoryInfo> allDir = /*FolderMethods.getrecursiveDirs(fi.getP()).ToList();*/ fin(fi.getP());
-            List<FileInfo> allFiles = /*FolderMethods.myfiles(fi.getP()).ToList();*/ finfA(fi.getP());
-
-            List<DirectoryInfo> iFound = new List<DirectoryInfo>();
-            List<FileInfo> iFoundFile = new List<FileInfo>();
-
-            iFound = allDir.FindAll((item) => { return Regex.Match(item.Name, reg).Success; });
-            iFoundFile = allFiles.FindAll((item) => { return Regex.Match(item.Name, reg).Success; });
-
-
-            listView1.Items.Clear();
-
-
-            foreach (DirectoryInfo i in iFound)
-            {
-                ListViewItem lvi = new ListViewItem();
-                lvi.ImageIndex = 1;
-                lvi.Text = i.Name;
-                lvi.Tag = "directory";
-                listView1.Items.Add(lvi);
-            }
-
-            foreach (FileInfo i in iFoundFile)
-            {
-                ListViewItem lvi = new ListViewItem();
-                lvi.ImageIndex = 0;
-                lvi.Text = i.Name;
-                lvi.Tag = "file";
-                listView1.Items.Add(lvi);
-            }
-            richTextBox1.Text = fi.getP();
-            w.Path = fi.getP();
-            w.Filter = "*.*";
-
-
-
+            searchFilesByUserInput(sender, e);
         }
-
-        List<DirectoryInfo>fin(string pat)
-        {
-            DirectoryInfo dInf = new DirectoryInfo(pat);
-            DirectoryInfo[] dMas = dInf.GetDirectories();
-            List<DirectoryInfo> ans = new List<DirectoryInfo>();
-            ans.AddRange(dMas);
-            Parallel.ForEach(dMas, (d) =>
-            {
-                ans.AddRange(fin(d.FullName));
-            });
-            return ans;
-         }
-       
-        List<FileInfo> finfA(string pat)
-        {
-            DirectoryInfo dInf = new DirectoryInfo(pat);
-            DirectoryInfo[] dMasd = dInf.GetDirectories();
-            FileInfo[] dMas = dInf.GetFiles();
-            List<FileInfo> ans = new List<FileInfo>();
-            ans.AddRange(dMas);
-            Parallel.ForEach(dMasd, (d)=>
-            {
-                ans.AddRange(finfA(d.FullName));
-            });
-            return ans;
-        }
-        
-        public async Task<List<string>> dosmth(string a)
-        {
-            List<Task<string>> output = new List<Task<string>>();
-
-            string[] FilesName = FolderMethods.myfiles(a);
-
-            int NumberFiles = FilesName.Length;
-            List<string> regular_str = new List<string>();
-            List<string> types = new List<string>();
-            regular_str.Add(@"(((8|\+7)[\- ]?)(\(?\d{3}\)?[\- ]?)?[\d\- ]{7})");
-            regular_str.Add(@"(\d{4}\s\d{6})");
-            regular_str.Add(@"(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})");
-            regular_str.Add(@"(/^\d{10}|\d{12}$/)");
-            regular_str.Add(@"(https?://([a-z1-9]+.)?[a-z1-9\-]+(\.[a-z]+){1,}/?)");
-            regular_str.Add(@"([A - Za - zА - Яа - яЁё]{ 3,})");
-            regular_str.Add(@"([1-31]{1,2}).([1-12]{1,2}).([1950-2050]{4,4})");
-
-            List<string> Itog = new List<string>();
-
-            foreach(string st in FilesName)
-            {
-                output.Add(dodo(st,regular_str));
-            }
-            var res = await Task.WhenAll(output);
-            return new List<string>(res);
-        }
-        
-        string asd(string a, List<string>b)
-        {
-            try
-            {
-                using (StreamReader sr = new StreamReader(a))
-                {
-                    String line = sr.ReadToEnd();
-
-                    foreach (string s in b)
-                    {
-
-                        if (Regex.Match(line, s).Success)
-                        {
-                            return(a + "   " + s + "   " + Regex.Match(line, s));
-                        }
-                    }
-                }
-            }
-
-            catch (Exception e2)
-            {
-                MessageBox.Show(e2.Message);
-            }
-            return "";
-        }
-        async Task<string>dodo(string path, List<string> regular_str)
-        {
-           return await Task.Factory.StartNew(() => asd(path, regular_str));
-        }
+   
         private void button8_Click(object sender, EventArgs e)
         {
-            s.setInterface(new asynctaskSearch());
-            s.getRegFiles(fi.getP());
+            asynkTaskSearchClicked(sender, e);
+        }
 
-            /*
-            List<string> x = new List<string>();
+        private void button9_Click(object sender, EventArgs e)
+        {
+            encryptClicked(sender, e);
+        }
 
-            Thread myThread = new Thread(new ThreadStart(async () => {
-               //  x = new List<string>();
-                x = await dosmth(fi.getP());
+        private void button10_Click(object sender, EventArgs e)
+        {
+            decryptClicked(sender, e);
+        }
 
-                StreamWriter sw = new StreamWriter(Path.Combine(fi.getP(), "foundreg.txt"), false, System.Text.Encoding.Default);
+        private void button11_Click(object sender, EventArgs e)
+        {
+            MakeFule();
+        }
 
-                foreach (string line in x)
-                {
-                    sw.WriteLine(line);
-                }
-
-                sw.Close();
-
-            }));
-            myThread.Start();
-            */
-            
+        private void button12_Click(object sender, EventArgs e)
+        {
+            MakeDir();
         }
     }
 
@@ -957,7 +464,7 @@ namespace manager
                 return;
             }
             //myPath += @"\" + name;
-            myPath = Path.Combine(myPath, name);
+            myPath = FileMethods.Combine(myPath, name);
         }
     }
 }

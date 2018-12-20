@@ -1,4 +1,6 @@
-﻿namespace manager
+﻿using System.Drawing;
+
+namespace manager
 {
     partial class Form1
     {
@@ -42,6 +44,11 @@
             this.button7 = new System.Windows.Forms.Button();
             this.richTextBox3 = new System.Windows.Forms.RichTextBox();
             this.button8 = new System.Windows.Forms.Button();
+            this.EncryptTextBox = new System.Windows.Forms.TextBox();
+            this.button9 = new System.Windows.Forms.Button();
+            this.button10 = new System.Windows.Forms.Button();
+            this.button11 = new System.Windows.Forms.Button();
+            this.button12 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // listView1
@@ -61,7 +68,7 @@
             this.listView2.Location = new System.Drawing.Point(525, 54);
             this.listView2.Name = "listView2";
             this.listView2.Scrollable = false;
-            this.listView2.Size = new System.Drawing.Size(125, 358);
+            this.listView2.Size = new System.Drawing.Size(125, 243);
             this.listView2.TabIndex = 3;
             this.listView2.UseCompatibleStateImageBehavior = false;
             this.listView2.View = System.Windows.Forms.View.Tile;
@@ -179,12 +186,66 @@
             this.button8.UseVisualStyleBackColor = true;
             this.button8.Click += new System.EventHandler(this.button8_Click);
             // 
+            // EncryptTextBox
+            // 
+            this.EncryptTextBox.Location = new System.Drawing.Point(657, 300);
+            this.EncryptTextBox.Name = "EncryptTextBox";
+            this.EncryptTextBox.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.EncryptTextBox.Size = new System.Drawing.Size(104, 20);
+            this.EncryptTextBox.TabIndex = 16;
+            // 
+            // button9
+            // 
+            this.button9.Location = new System.Drawing.Point(657, 327);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(102, 23);
+            this.button9.TabIndex = 17;
+            this.button9.Text = "Encrypt";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
+            // 
+            // button10
+            // 
+            this.button10.Location = new System.Drawing.Point(657, 356);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(103, 23);
+            this.button10.TabIndex = 18;
+            this.button10.Text = "Decrypt";
+            this.button10.UseVisualStyleBackColor = true;
+            this.button10.Click += new System.EventHandler(this.button10_Click);
+            // 
+            // button11
+            // 
+            this.button11.Location = new System.Drawing.Point(526, 304);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(124, 46);
+            this.button11.TabIndex = 19;
+            this.button11.Text = "Create File";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
+            // 
+            // button12
+            // 
+            this.button12.Location = new System.Drawing.Point(526, 356);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(124, 46);
+            this.button12.TabIndex = 20;
+            this.button12.Text = "Create Folder";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.button12_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
+            Bitmap p = (Bitmap)Image.FromFile("C:\\Users\\Илья\\Downloads\\manager\\manager\\327362372698111.jpg");
+            this.BackgroundImage = p;
             this.ClientSize = new System.Drawing.Size(772, 425);
+            this.Controls.Add(this.button12);
+            this.Controls.Add(this.button11);
+            this.Controls.Add(this.button10);
+            this.Controls.Add(this.button9);
+            this.Controls.Add(this.EncryptTextBox);
             this.Controls.Add(this.button8);
             this.Controls.Add(this.richTextBox3);
             this.Controls.Add(this.button7);
@@ -204,6 +265,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.GiveFeedback += new System.Windows.Forms.GiveFeedbackEventHandler(this.Form1_GiveFeedback);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -221,6 +283,11 @@
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.RichTextBox richTextBox3;
         private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.TextBox EncryptTextBox;
+        private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.Button button12;
     }
 }
 

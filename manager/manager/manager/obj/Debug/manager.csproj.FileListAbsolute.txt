@@ -14,7 +14,9 @@ C:\Users\HP\documents\visual studio 2015\Projects\manager\manager\obj\Debug\mana
 C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\manager.exe.config
 C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\manager.exe
 C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\manager.pdb
-C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form1.resources
+C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\DotNetZip.dll
+C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\DotNetZip.pdb
+C:\Users\Илья\Downloads\manager\manager\manager\bin\Debug\DotNetZip.xml
 C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form2.resources
 C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form3.resources
 C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Form4.resources
@@ -27,3 +29,4 @@ C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.csproj.Gen
 C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.exe
 C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.pdb
 C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.csprojResolveAssemblyReference.cache
+C:\Users\Илья\Downloads\manager\manager\manager\obj\Debug\manager.Factory.resources

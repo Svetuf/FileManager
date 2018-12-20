@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ionic.Zip;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace manager
             regular_str.Add(@"(https?://([a-z1-9]+.)?[a-z1-9\-]+(\.[a-z]+){1,}/?)");
             regular_str.Add(@"([A - Za - zА - Яа - яЁё]{ 3,})");
             regular_str.Add(@"([1-31]{1,2}).([1-12]{1,2}).([1950-2050]{4,4})");
-
+            
             myInter.whatiFound(dire, FilesName.ToList(), regular_str);
         }
 
@@ -56,6 +57,7 @@ namespace manager
 
             foreach (string file in FilesName)
             {
+             
                 try
                 {
                     using (StreamReader sr = new StreamReader(file))
@@ -267,6 +269,5 @@ namespace manager
             myThread.Start();
         }
     }
-
-
+    
 }
